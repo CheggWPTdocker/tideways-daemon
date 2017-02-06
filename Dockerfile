@@ -1,6 +1,10 @@
 FROM cheggwpt/alpine:edge
 
+ENV TIDEWAYS_PORT_UDP 8135
+ENV TIDEWAYS_PORT_TCP 9135
+ENV TIDEWAYS_ENV "development"
 ENV tideways_version 1.5.3
+ENV TIDEWAYS_DAEMON_EXTRA "--env=${TIDEWAYS_ENV} --address=0.0.0.0:${TIDEWAYS_PORT_TCP} --udp=0.0.0.0:${TIDEWAYS_PORT_UDP}"
 
 RUN apk add --no-cache --update wget && \
   	cd /tmp && \
@@ -13,7 +17,9 @@ RUN apk add --no-cache --update wget && \
 	apk del wget && \
 	rm -rf /var/cache/apk/*
 
-EXPOSE 8135/udp
-EXPOSE 9135
+COPY entrypoint.sh /
 
-ENTRYPOINT ["/usr/bin/tideways-daemon"]
+EXPOSE $TIDEWAYS_PORT_UDP/udp
+EXPOSE $TIDEWAYS_PORT_TCP
+
+ENTRYPOINT ["/entrypoint.sh", "tideways-daemon"]
